@@ -1,0 +1,145 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider        = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Pessoa {
+  id          Int          @id @default(autoincrement())
+  nome        String
+  cpf         String
+  email       String
+  tipoPessoa  String
+  telefone    String
+  endereco    String
+  bairro      String
+  numero      String
+  complemento String
+  cidade      String
+  estado      String
+  cep         String
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  assinantes  Assinantes[]
+}
+
+model Usuario {
+  id              Int           @id @default(autoincrement())
+  nome            String
+  email           String
+  senha           String
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  usuarioPerfil   UsuarioPerfil @relation(fields: [usuarioPerfilId], references: [id])
+  usuarioPerfilId Int           @unique
+}
+
+model UsuarioPerfil {
+  id        Int      @id @default(autoincrement())
+  usuario   Usuario?
+  usuarioId Int      @unique
+  perfil    Perfil   @relation(fields: [perfilId], references: [id])
+  perfilId  Int
+}
+
+model Perfil {
+  id             Int             @id @default(autoincrement())
+  nome           String
+  usuarioPerfiis UsuarioPerfil[]
+}
+
+model Imovel {
+  id          Int          @id @default(autoincrement())
+  nome        String
+  descricao   String
+  valor       Decimal
+  endereco    String
+  bairro      String
+  numero      String
+  complemento String
+  cidade      String
+  estado      String
+  cep         String
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  contratos   Contrato[]
+  fotos       ImovelFoto[]
+}
+
+model ImovelFoto {
+  id         Int      @id @default(autoincrement())
+  foto       String
+  imovel     Imovel   @relation(fields: [imovelId], references: [id])
+  imovelId   Int
+  contrato   Contrato @relation(fields: [contratoId], references: [id])
+  contratoId Int
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+model Contrato {
+  id                   Int            @id @default(autoincrement())
+  imovel               Imovel         @relation(fields: [imovelId], references: [id])
+  imovelId             Int
+  ContratoAssinantesId Int
+  valor                Decimal
+  prazo                Int
+  dataInicio           DateTime
+  createdAt            DateTime       @default(now())
+  updatedAt            DateTime       @updatedAt
+  Recibo               Recibo[]
+  Assinantes           Assinantes[]
+  fotos                ImovelFoto[]
+  ContaBanco           ContaBanco?
+  TipoPagamento        TipoPagamento?
+}
+
+model Assinantes {
+  id         Int       @id @default(autoincrement())
+  pessoa     Pessoa    @relation(fields: [pessoaId], references: [id])
+  pessoaId   Int
+  contrato   Contrato? @relation(fields: [contratoId], references: [id])
+  contratoId Int
+  descricao  String
+  Recibo     Recibo[]
+}
+
+model Recibo {
+  id             Int        @id @default(autoincrement())
+  contrato       Contrato   @relation(fields: [contratoId], references: [id])
+  contratoId     Int
+  assinante      Assinantes @relation(fields: [assinanteId], references: [id])
+  assinanteId    Int
+  valor          Decimal
+  dataVencimento DateTime
+  dataPagamento  DateTime
+  valorPago      Decimal
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+}
+
+model ContaBanco {
+  id         Int       @id @default(autoincrement())
+  nome       String
+  numero     String
+  agencia    String
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  contrato  Contrato? @relation(fields: [contratoId], references: [id])
+  contratoId Int?      @unique
+}
+
+model TipoPagamento {
+  id         Int       @id @default(autoincrement())
+  nome       String
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  contrato  Contrato? @relation(fields: [contratoId], references: [id])
+  contratoId Int?      @unique
+}
